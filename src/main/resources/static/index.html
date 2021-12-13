@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="kr">
+<head>
+    <meta charset="UTF-8">
+    <title>AWS S3 CRUD Example</title>
+</head>
+<body>
+    <input type="file" id="file" multiple>
+    <table>
+        <thead>
+            <tr>
+                <th>No</th>
+                <th>파일명</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody id="s3-area"></tbody>
+    </table>
+    <script type="text/javascript">
+        getS3Objects();
+
+        document.getElementById("file").addEventListener("change", uploadS3Object);
+
+        function uploadS3Object() {
+            const files = this.files;
+
+            if (files.length > 0) {
+                const formData = new FormData();
+                Array.from(files).forEach(file => formData.append("multipartFiles", file));
+
+                fetch("/amazon/s3/objects", {
+                    method : "POST",
+                    body : formData
+                })
+                .then(response => {
+                    if (response.ok) {
+                        alert("파일 정상적으로 업로드 되었습니다.");
+                        location.reload();
+                    } else {
+                        alert("서버에 오류가 발생되었습니다.");
+                    }
+                });
+            }
+        }
+
+        function getS3Objects() {
+            fetch("/amazon/s3/objects")
+            .then(response => response.json())
+            .then(result => createS3Objects(result));
+        }
+
+        function createS3Objects(result) {
+            if (result.length > 0) {
+                const s3Area = document.getElementById("s3-area");
+
+                result.forEach(s3object => {
+                    const data = `
+                        <tr>
+                            <td>${s3object.id}</td>
+                            <td>${s3object.name}</td>
+                            <td>
+                                <button type="button" onclick="download(${s3object.id}, '${s3object.name}')">다운로드</button>
+                                <button type="button" onclick="deleteS3Object(${s3object.id})">삭제</button>
+                            </td>
+                        </tr>
+                    `;
+                    s3Area.innerHTML += data;
+                });
+            } else {
+                emptyData();
+            }
+        }
+
+        function emptyData() {
+            const s3Area = document.getElementById("s3-area");
+            const data = `
+                <tr>
+                    <td colspan="3">데이터가 존재하지 않습니다.</td>
+                </tr>
+            `;
+            s3Area.innerHTML = data;
+        }
+
+        function download(id, name) {
+            const a = document.createElement("a");
+            a.href = `/amazon/s3/objects/${id}/download`;
+            a.download = name;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+        }
+
+        function deleteS3Object(id) {
+            if (confirm("파일을 삭제하시겠습니까?")) {
+                fetch(`/amazon/s3/objects/${id}`, {
+                    method : "DELETE"
+                })
+                .then(response => {
+                    if (response.ok) {
+                        alert("파일이 정상적으로 삭제되었습니다.");
+                        location.reload();
+                    } else {
+                        alert("서버에 오류가 발생되었습니다.");
+                    }
+                });
+            }
+        }
+    </script>
+</body>
+</html>
