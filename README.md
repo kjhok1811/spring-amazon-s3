@@ -30,3 +30,6 @@
   - @SpringBootApplication 어노테이션이 선언된 JAVA 파일을 가보시면 별도 클래스를 만들어 두었습니다. 
     이 클래스는 Spring Boot가 구동되기전에 초기값을 설정하도록 구성하였으며 System.setProperty 속성값에 bucket, access-key, secret-key값을 셋팅해주시면 됩니다.
   - bucket, access-key, secret-key값을 세팅하시고 실행하시면 세팅한 값을 application.yml이 읽어드려 Amazon S3 설정파일을 구성합니다.
+
+- 웹페이지 접속
+  - 위 3과정을 모두 마쳤으면 http://localhost:8080/index.html 로 접속하셔서 테스트하시면 됩니다.
